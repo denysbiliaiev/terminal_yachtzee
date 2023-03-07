@@ -1,22 +1,23 @@
 package dnb.game.yahtzee;
 
-import java.util.Scanner;
-
 public class GameModel {
 	public static final int MAX_ROLL = 3;
 	public static final int DICE_COUNT = 4;
 	
+	private Environment env;
+	private String[] options;
 	private Die[] dice = new Die[DICE_COUNT];
 	private Player[] players;
-	private Scanner scanner;
 	private int currentRound = 1;
 	
-	public GameModel(Scanner scanner) {
-		this.scanner = scanner; 
+	public GameModel(String[] options) {
+		this.options = options;
 	}
 	
-	public void run(String[] playersName) {
-		setupPlayer(playersName);
+	public void run(Environment env) {
+		this.env = env;
+		
+		setupPlayer();
 		setupDice();
 		start();
 	}
@@ -38,44 +39,29 @@ public class GameModel {
 	}
 	
 	private void nextRound(Player player) {
-		while (player.getRollCount() <= GameModel.MAX_ROLL) {
+		while (!player.getIsRoundScorePopulated() && player.getRollCount() <= GameModel.MAX_ROLL) {
 			System.out.printf(Util.SEPARATOR);
 			System.out.printf("Player: %s, Roll number: %s %n", player.getName(), player.getRollCount());
 			System.out.printf(Util.SEPARATOR);
 			
 			if (player.getRollCount() > 1) {
-				System.out.println("Enter DICE number(s) to keep (enter separated by a space):");
-				
-				if (scanner.hasNextLine()) {
-					player.setFreezDice(scanner.nextLine());
-				}
-				scanner.reset();
+				player.setFreezDice(env.inputString("Enter DICE number(s) to keep or skip (press enter):%n"));
 			}
 			
 			player.rollDice();
 		    
 			Board.viewRollResult(player);
 		
-			if (!player.getIsRoundScorePopulated()) {
-				System.out.println("Enter N from Score Table e.g.(1...8) to keep Score or skip (press enter):");
-				if (scanner.hasNextLine()) {
-					String nextLine = scanner.nextLine();
-					if (Util.isNumeric(nextLine) && Integer.parseInt(nextLine) <= Scorecard.TOTAL_ROUNDS) {
-						player.populateScore(Integer.parseInt(nextLine));
-					}
-				}
-				scanner.reset();
-			    
-			    if (player.getRollCount() == 3) {
-			    	while (scanner.hasNextLine()) {
-						String nextLine = scanner.nextLine();
-						if (Util.isNumeric(nextLine) && Integer.parseInt(nextLine) <= Scorecard.TOTAL_ROUNDS) {
-							player.populateScore(Integer.parseInt(nextLine));
-							return;
-						}
-					}
-		    	}
-			    scanner.reset();
+			int scoreType = -1;
+			
+			if (player.getRollCount() < 3) {
+				scoreType = env.intputInteger("Enter N from Score Table e.g.(1...8) to keep Score or skip (press enter):%n");
+			} else {
+				scoreType = env.intputIntegerRequired("(Required*) Enter N from Score Table e.g.(1...8) to keep Score:%n");
+			}	
+	
+			if (scoreType != -1 && scoreType <= Scorecard.TOTAL_ROUNDS) {
+				player.populateScore(scoreType);
 			}
 			
 			player.addRollCount();
@@ -88,11 +74,11 @@ public class GameModel {
 		}
 	}
 	
-	private void setupPlayer(String[] playersName) {
-	    this.players = new Player[playersName.length];
+	private void setupPlayer() {
+	    this.players = new Player[this.options.length];
 	    
-	    for (int i = 0; i < playersName.length; i++) {
-    	   	this.players[i] = new Player(new Scorecard(), this.dice).setName(playersName[i]);
+	    for (int i = 0; i < this.options.length; i++) {
+    	   	this.players[i] = new Player(new Scorecard(), this.dice).setName(this.options[i]);
 		}
 	
 	}

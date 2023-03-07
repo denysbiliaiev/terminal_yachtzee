@@ -15,14 +15,12 @@ public class Board {
 		for (int i = 0; i < players.length; i++) {
 			int totalScore = players[i].getScorecard().getTotalPoints();
 			
-			totalScoreByPlayer[i] = totalScore;
-			
 			if (totalScore > maxTotalScore) {
 				maxTotalScore = totalScore;
 				winnerName = players[i].getName();
 			}
 			
-			viewPlayerResults(players[i], totalScore);
+			viewPlayerResult(players[i], totalScore);
 		}
 		
 		System.out.printf("%s Player: %s, Total Score: %s Winner!!! %s", Util.ANSI_GREEN, winnerName, maxTotalScore, Util.ANSI_RESET);
@@ -61,8 +59,7 @@ public class Board {
 		}
 	}
 	
-	private static void viewPlayerResults(Player player, int totalScore) {
-		int[][] evaluations = player.getScorecard().getEvaluations(player.getDice());
+	private static void viewPlayerResult(Player player, int totalScore) {
 		System.out.printf(Util.SEPARATOR);
 		System.out.printf("%s Games result for Player: %s %s %n", Util.ANSI_RED, player.getName(), Util.ANSI_RESET);
 		System.out.printf(Util.SEPARATOR);
@@ -70,10 +67,9 @@ public class Board {
 		System.out.printf("| %-20s | %-6s |%n", "ROLLS", "POINTS");
 		System.out.printf(Util.SEPARATOR);
 
-		for (int i = 0; i < evaluations.length; i++) {
-			int[] evaluationByCategory = evaluations[i];
+		for (int i = 0; i < Scorecard.TOTAL_ROUNDS; i++) {
 			String scoreName = player.getScorecard().getScores(i);
-			System.out.printf("| %-20s | %-6s |%n", scoreName, String.valueOf(evaluationByCategory[0]));
+			System.out.printf("| %-20s | %-6s |%n", scoreName, String.valueOf(player.getScorecard().getPoints(i)));
 			System.out.printf(Util.SEPARATOR);
 		}
 		System.out.printf(Util.SEPARATOR);

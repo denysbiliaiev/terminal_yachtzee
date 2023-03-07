@@ -1,18 +1,16 @@
 package dnb.game.yahtzee;
 
-import java.util.Scanner;
-
 public class Game {
 
 	public static void main(String[] args) {
-		Scanner scanner = new Scanner(System.in);
+		Environment env = new Environment();
 
 		try {
-			new GameModel(scanner).run(args);
+			env.run(new GameModel(args));
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		} finally {
-			scanner.close();
+			env.close();
 		}
 	}
 
